@@ -1,0 +1,34 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+def configure(conf):
+    pass
+
+def build(bld):
+    sources = [
+        'gx_globals.cpp',
+        'gx_child_process.cpp',
+        'gx_engine.cpp',
+        'gx_main_interface.cpp',
+        'gx_gui_helpers.cpp',
+        'gx_jack.cpp',
+        'gx_jconv_settings.cpp',
+        'gx_preset.cpp',
+        'gx_sndfile.cpp',
+        'gx_system.cpp',
+        'gx_ui.cpp',
+        'GtkFastMeter.cpp',
+        'GtkRegler.cpp',
+        'GtkWaveView.cpp',
+        'gx_main.cpp'
+        ]
+
+    prog = bld.new_task_gen('cxx', 'program')
+    prog.includes = './headers'
+    prog.cxxflags= bld.env['CXXFLAGS']
+    prog.source = [] + sources
+    prog.uselib = ['JACK', 'SNDFILE', 'GTK2','ZITA_RESAMPLER']
+    prog.target = bld.env['BIN_NAME']
+    prog.chmod=0755
+    prog.install_path = bld.env['BINDIR']
+
