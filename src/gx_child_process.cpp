@@ -52,7 +52,7 @@ namespace gx_child_process
   {
 
     //----- terminate child processes
-    int gx_terminate_child_procs()
+    int ChildProcess::gx_terminate_child_procs()
     {
       // jconv
       if (child_pid[JCONV_IDX] != NO_PID)
@@ -64,7 +64,7 @@ namespace gx_child_process
     }
 
     //---- popen revisited for Jc_Gui
-    FILE* gx_popen(const char *cmdstring,
+    FILE* ChildProcess::gx_popen(const char *cmdstring,
                    const char *type,
                    const int proc_idx)
     {
@@ -113,7 +113,7 @@ namespace gx_child_process
     }
 
     //---- pclose revisited for Jc_Gui
-    int gx_pclose(FILE *fp, const int proc_idx)
+    int ChildProcess::gx_pclose(FILE *fp, const int proc_idx)
     {
       int stat;
       pid_t	pid;
@@ -140,7 +140,7 @@ namespace gx_child_process
     }
 
     // -------------------------------------------
-    bool gx_lookup_pid(const pid_t child_pid)
+    bool ChildProcess::gx_lookup_pid(const pid_t child_pid)
     {
       // --- this function looks up the given PID from the list of processes
       // it returns true if a match is found.
@@ -151,7 +151,7 @@ namespace gx_child_process
     }
 
     //---- find latest process ID by reading stdout from pgrep -n
-    pid_t gx_find_child_pid(const char* procname)
+    pid_t ChildProcess::gx_find_child_pid(const char* procname)
     {
       // --- this function retrieves the latest PID of a named process.
       // it is to be called just after Jc_Gui spawns a child process
@@ -203,14 +203,14 @@ namespace gx_child_process
 
 
     // ---------------  start stop JConv
-    void gx_start_stop_jconv(GtkWidget *widget, gpointer data)
+    void ChildProcess::gx_start_stop_jconv(GtkWidget *widget, gpointer data)
     {
 
       if (gx_jconv::GxJConvSettings::checkbutton7 == 0)
         {
           gx_jconv::checkbox7 = 1.0;
 
-          pid_t pid = gx_child_process::child_pid[JCONV_IDX];
+          pid_t pid = child_pid[JCONV_IDX];
 
           // if jconv is already running, we have to kill it
           // applying a new jconv setting is not a runtime thing ... :(
@@ -299,7 +299,7 @@ namespace gx_child_process
                   gx_jconv::GxJConvSettings::checkbutton7 = 0;
                   gx_jconv::jconv_is_running = false;
 
-                  gx_child_process::child_pid[JCONV_IDX] = NO_PID;
+                  child_pid[JCONV_IDX] = NO_PID;
                 }
               else
                 {
@@ -413,7 +413,7 @@ namespace gx_child_process
               (void)gx_gui::gx_message_popup(warning.c_str());
               gx_jconv::GxJConvSettings::checkbutton7 = 0;
               gx_jconv::jconv_is_running = false;
-              gx_child_process::child_pid[JCONV_IDX] = NO_PID;
+              child_pid[JCONV_IDX] = NO_PID;
             }
           gx_jconv::checkbox7 = 0.0;
         }

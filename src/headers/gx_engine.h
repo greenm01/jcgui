@@ -88,19 +88,32 @@ namespace gx_engine
   class GxEngine : public dsp
   {
   public:
+    float fjc_ingain1;
+	float fjc_ingain;
+    float fsliderdel1;
+	float fsliderdel0;
+	int   fslider_tone_check;
+    int   fslider_tone_check1;
+    float fslider24;
+    float fslider25;
+    float fslider17;
+    float filebutton;
+    float fwarn;
+    float fslider_tone2; // tone bass controller
+    float fslider_tone1; // tone middle controller
+    float fslider_tone0; // tone treble controller
+  private:
 
     // register all variables
 
     //----- tone
-    float fslider_tone0; // tone treble controller
+    
     float fConst_tone0;
     float fConst_tone1;
     float fConst_tone2;
-    float fslider_tone1; // tone middle controller
     float fConst_tone3;
     float fConst_tone4;
     float fConst_tone5;
-    float fslider_tone2; // tone middle controller
     float fVec_tone0[3];
     float fRec_tone3[3];
     float fRec_tone2[3];
@@ -113,12 +126,9 @@ namespace gx_engine
     float fRec_ltone1[3];
     float fRec_ltone0[3];
 
-    float fslider17;
     float fRec46[2];
     float fRec47[2];
 
-    float fslider24;
-    float fslider25;
     // lets init the variable for the tone settings
     float fSlow_mid_tone ;
     float fSlow_tone0;
@@ -169,22 +179,14 @@ namespace gx_engine
     float fSlow_tone45 ;
     float fSlow_tone46 ;
     float fSlow_tone47 ;
-    int   fslider_tone_check;
-    int   fslider_tone_check1;
     // tone end
 
-    float fjc_ingain;
     float fRecinjc[2];
     int   IOTAdel;
 	float fVecdel0[262144];
-	float fsliderdel0;
 	float fConstdel0;
 	float fVecdel1[262144];
-	float fsliderdel1;
-	float fjc_ingain1;
 	float fRecinjcr[2];
-    float filebutton;
-    float fwarn;
 
     // private constructor
     GxEngine() {}

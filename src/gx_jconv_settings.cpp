@@ -71,12 +71,12 @@ namespace gx_jconv
       flGain       = 0.2;
       fMem        = 8000;
       fMode       = kJConvCopy;
-      fBufferSize = gx_jack::jack_bs;
+      fBufferSize = gx_jack::GxJack::instance()->get_bz();
       fOffset     = 0;
       fLength     = 0;
       fDelay      = 0;
       flDelay      = 0;
-      if (gx_jack::jack_bs == 0)fBufferSize = 128;
+      if (gx_jack::GxJack::instance()->get_bz() == 0)fBufferSize = 128;
 
       // invalidate due to no IR
       invalidate();
@@ -93,12 +93,12 @@ namespace gx_jconv
       flGain       = 0.2;
       fMem        = 8000;
       fMode       = kJConvCopy;
-      fBufferSize = gx_jack::jack_bs;
+      fBufferSize = gx_jack::GxJack::instance()->get_bz();
       fOffset     = 0;
       fLength     = 0;
       fDelay      = 0;
       flDelay      = 0;
-      if (gx_jack::jack_bs == 0)fBufferSize = 128;
+      if (gx_jack::GxJack::instance()->get_bz() == 0)fBufferSize = 128;
 
       // invalidate due to no IR
       invalidate();
@@ -175,10 +175,10 @@ namespace gx_jconv
       istringstream sline4(buffer);
       sline4 >> sval;
 
-      if ((int)sval.find("copy") != -1)
+      if ((int)sval.find("copy") != -1) {
         fMode = kJConvCopy;
-      else
-        {
+        flGain = fGain;
+      } else {
           fMode = kJConvRead;
           istringstream sline5(buffer);
           sline5 >> sval  >> ival >> ival
@@ -188,6 +188,8 @@ namespace gx_jconv
       // validate
       validate();
     }
+
+    
 
     // --------------------- save JConv parameters to file
     bool gx_save_jconv_settings(GtkWidget* widget, gpointer data)
@@ -478,9 +480,9 @@ namespace gx_jconv
 
       if (jcset->isValid())
         {
-          sf = openInfoSoundFile(jcset->getFullIRPath().c_str(),
+          sf = Audio::instance()->openInfoSoundFile(jcset->getFullIRPath().c_str(),
                                   &chans, &sr, &framecount, &format);
-          closeSoundFile(sf);
+          Audio::instance()->closeSoundFile(sf);
 
           // display IR file info
           lab.str("");
@@ -522,11 +524,11 @@ namespace gx_jconv
       jcset->setlGain(gtk_adjustment_get_value(GTK_ADJUSTMENT(gladj)));
 
       // -- MEMORY
-      mslider = gx_knob ("max mem",1,jcset->getMem(), 10, 400000, 1000);
-      GtkAdjustment *madj = gtk_range_get_adjustment(GTK_RANGE(mslider));
-      gtk_range_set_value(GTK_RANGE(mslider), framecount );
+      jcset->mslider = gx_knob ("max mem",1,jcset->getMem(), 10, 400000, 1000);
+      GtkAdjustment *madj = gtk_range_get_adjustment(GTK_RANGE(jcset->mslider));
+      gtk_range_set_value(GTK_RANGE(jcset->mslider), framecount );
 
-      GtkWidget * mslider_box = gtk_widget_get_parent(GTK_WIDGET(mslider));
+      GtkWidget * mslider_box = gtk_widget_get_parent(GTK_WIDGET(jcset->mslider));
       jcset->setMem(gtk_adjustment_get_value(GTK_ADJUSTMENT(madj)));
 
       // -- READ MODE
@@ -769,9 +771,9 @@ namespace gx_jconv
 
       // resample it
       GxResampleStatus status =
-        resampleSoundFile(jcset->getFullIRPath().c_str(),
+        Audio::instance()->resampleSoundFile(jcset->getFullIRPath().c_str(),
                           resampled.c_str(),
-                          gx_jack::jack_sr);
+                          gx_jack::GxJack::instance()->get_sr());
 
       if (status == kNoError)
         {
@@ -841,9 +843,9 @@ namespace gx_jconv
               //----- get snd info from IR file
               int chans, sr, framescount, format;
 
-              SNDFILE* sf = openInfoSoundFile(file.c_str(),
+              SNDFILE* sf = Audio::instance()->openInfoSoundFile(file.c_str(),
                                                &chans, &sr, &framescount, &format);
-              closeSoundFile(sf);
+              Audio::instance()->closeSoundFile(sf);
               
 
               /* We set the sndfile info here to the label, if resampling is needed/done. */
@@ -863,7 +865,7 @@ namespace gx_jconv
 
               //----- draw the wave file
               gx_waveview_set_value(widget, NULL);
-              gtk_range_set_value(GTK_RANGE(mslider), framescount );
+              gtk_range_set_value(GTK_RANGE(jcset->mslider), framescount );
 
               //----- set mode chooser to copy and disable it when a 1 channel file is loaded
               if (chans == 1)
@@ -890,14 +892,14 @@ namespace gx_jconv
                 }
 
               // check file sample rate vs jackd's
-              if (sr != ((int)gx_jack::jack_sr)&&(gx_jack::client))
+              if (sr != ((int)gx_jack::GxJack::instance()->get_sr())&&(gx_jack::client))
                 {
                   // dump some new text
                   lab.str("");
                   lab << "   The " << chans   << " channel Soundfile" << endl
                   << "   Sample rate ("   << sr << ")" << endl
                   << "   does not match"  << endl
-                  << "   the jack Sample rate (" << gx_jack::jack_sr << ")" << endl
+                  << "   the jack Sample rate (" << gx_jack::GxJack::instance()->get_sr() << ")" << endl
                   << "   Do you wish to resample it ?     " << endl;
 
                   gint response =
@@ -927,11 +929,11 @@ namespace gx_jconv
                   else   // OK, resampling it
                     {
                       gx_resample_jconv_ir(NULL, NULL);
-                      sr = gx_jack::jack_sr;
+                      sr = gx_jack::GxJack::instance()->get_sr();
                       // display in the wave viewer
-                      SNDFILE* sf = openInfoSoundFile(file.c_str(),
+                      SNDFILE* sf = Audio::instance()->openInfoSoundFile(file.c_str(),
                                                &chans, &sr, &framescount, &format);
-                      closeSoundFile(sf);
+                      Audio::instance()->closeSoundFile(sf);
                       lab.str("");
                       if(format == 0)
                       lab << "IR file info: " << sr << " HZ " << endl;
@@ -941,7 +943,7 @@ namespace gx_jconv
                       << framescount      << " Samples ";
                       gtk_label_set_text(GTK_LABEL(gx_gui::label1), lab.str().c_str());
                       gx_waveview_set_value(widget, NULL);
-                      gtk_range_set_value(GTK_RANGE(mslider), framescount );
+                      gtk_range_set_value(GTK_RANGE(jcset->mslider), framescount );
                     }
                 }
 

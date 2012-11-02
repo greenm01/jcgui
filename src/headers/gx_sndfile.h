@@ -20,11 +20,9 @@
 /* ------- This is the SNDFILE namespace ------- */
 
 #pragma once
-#include <zita-resampler/resampler.h>
+
 namespace gx_sndfile
 {
-
-
 
   // --------------- a simple resampling status
   typedef enum {
@@ -34,19 +32,22 @@ namespace gx_sndfile
     kErrorResample = 3
   } GxResampleStatus;
 
-  class BufferResampler: Resampler {
-   public:
-      float *process(int fs_inp, int ilen, float *input, int fs_outp, int* olen, int chan);
+  class Audio {
+    private:
+      sf_count_t writeSoundOutput(SNDFILE*, float*, int);
+      Audio() {};
+    public:
+      SNDFILE* openOutputSoundFile(const char*, int, int, int);
+      SNDFILE* openInputSoundFile (const char*, int*, int*, int*);
+      SNDFILE* openInfoSoundFile (const char*, int*, int*, int*, int*);
+      void     closeSoundFile     (SNDFILE*);
+      sf_count_t readSoundInput  (SNDFILE*, float*, int);
+      GxResampleStatus resampleSoundFile(const char*, const char*, int);
+      static inline Audio* instance()
+      {
+        static Audio myaudio;
+        return &myaudio;
+      }
   };
-
-  SNDFILE* openOutputSoundFile(const char*, int,  int);
-  SNDFILE* openInputSoundFile (const char*, int*, int*, int*);
-  SNDFILE* openInfoSoundFile (const char*, int*, int*, int*, int*);
-  void     closeSoundFile     (SNDFILE*);
-
-  sf_count_t writeSoundOutput(SNDFILE*, float*, int);
-  sf_count_t readSoundInput  (SNDFILE*, float*, int);
-
-  GxResampleStatus resampleSoundFile(const char*, const char*, int);
 
 } /* end of gx_sndfile namespace */

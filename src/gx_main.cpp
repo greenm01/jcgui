@@ -99,16 +99,16 @@ int main(int argc, char *argv[])
   gui->setup();
 
   // ---------------------- initialize jack client ------------------
-  if (gx_jack::gx_jack_init())
+  if (gx_jack::GxJack::instance()->gx_jack_init())
     {
       // -------- initialize Jc_Gui engine --------------------------
       gx_engine::gx_engine_init();
 
       // -------- set jack callbacks and activation -------------------
-      gx_jack::gx_jack_callbacks_and_activate();
+      gx_jack::GxJack::instance()->gx_jack_callbacks_and_activate();
 
       // -------- init port connections
-      gx_jack::gx_jack_init_port_connection(optvar);
+      gx_jack::GxJack::instance()->gx_jack_init_port_connection(optvar);
     }
 
   // ----------------------- run GTK main loop ----------------------

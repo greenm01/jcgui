@@ -52,7 +52,7 @@ namespace gx_jack
   {
 
     //----- pop up a dialog for starting jack
-    bool gx_jack_init()
+    bool GxJack::gx_jack_init()
     {
       jack_status_t jackstat;
       client_name = "Jc_Gui";
@@ -101,7 +101,7 @@ namespace gx_jack
         }
 
       // ----------------------------------
-      jack_is_down = false;
+      set_is_jack_down(false);
 
       // it is maybe not the 1st Jc_Gui instance ?
       if (jackstat & JackNameNotUnique)
@@ -129,7 +129,7 @@ namespace gx_jack
 
     //----- set client callbacks and activate client
     // Note: to be called after gx_engine::gx_engine_init()
-    void gx_jack_callbacks_and_activate()
+    void GxJack::gx_jack_callbacks_and_activate()
     {
       //----- set the jack callbacks
 
@@ -173,7 +173,7 @@ namespace gx_jack
     }
 
     //----- connect ports if we know them
-    void gx_jack_init_port_connection(const string* optvar)
+    void GxJack::gx_jack_init_port_connection(const string* optvar)
     {
       // set autoconnect capture to user capture port
       if (!optvar[JACK_INP1].empty())
@@ -198,7 +198,7 @@ namespace gx_jack
     }
 
     //----- pop up a dialog for starting jack
-    bool gx_start_jack_dialog()
+    bool GxJack::gx_start_jack_dialog()
     {
       //--- run dialog and check response
       const guint nchoices    = 3;
@@ -234,7 +234,7 @@ namespace gx_jack
       switch (response)
         {
         case GTK_RESPONSE_NO:
-          jack_is_down = true;
+          set_is_jack_down(true);
           break;
 
         case GTK_RESPONSE_CANCEL:
@@ -253,7 +253,7 @@ namespace gx_jack
 
 
     //----start jack if possible
-    bool gx_start_jack(void* arg)
+    bool GxJack::gx_start_jack(void* arg)
     {
       // first, let's try via qjackctl
       if (gx_system_call("which", "qjackctl", true) == SYSTEM_OK)
@@ -305,7 +305,7 @@ namespace gx_jack
     }
 
     //---- Jack server connection / disconnection
-    void gx_jack_connection(GtkCheckMenuItem *menuitem, gpointer arg)
+    void GxJack::gx_jack_connection(GtkCheckMenuItem *menuitem, gpointer arg)
     {
       if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM (menuitem)) == TRUE)
         {
@@ -328,7 +328,7 @@ namespace gx_jack
 
                   // refresh latency check menu
                   gx_gui::GxMainInterface* gui = gx_gui::GxMainInterface::instance();
-                  GtkWidget* wd = gui->getJackLatencyItem(gx_jack::jack_bs);
+                  GtkWidget* wd = gui->getJackLatencyItem(jack_bs);
                   if (wd)
                     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(wd), TRUE);
 
@@ -363,7 +363,7 @@ namespace gx_jack
                                                JackPortIsInput, 0);
                           gx_engine::gNumInChans++;
                         }
-                      jack_is_exit = false;
+                      set_is_jack_exit(false);
 
                       // ---- port connection
 
@@ -385,7 +385,7 @@ namespace gx_jack
                   gtk_widget_show(gx_gui::gx_jackd_on_image);
                   gtk_widget_hide(gx_gui::gx_jackd_off_image);
                 }
-              jack_is_exit = false;
+              set_is_jack_exit(false);
               gx_print_info("Jack Server", "Connected to Jack Server");
             }
         }
@@ -401,7 +401,7 @@ namespace gx_jack
               gNumOutChans -= 2;
               gNumInChans -= 2;
               gx_jconv::GxJConvSettings::checkbutton7 = 0;
-              gx_start_stop_jconv(NULL,NULL);
+              ChildProcess::instance()->gx_start_stop_jconv(NULL,NULL);
 
             }
 
@@ -423,7 +423,7 @@ namespace gx_jack
     }
 
     //----jack latency change
-    void gx_set_jack_buffer_size(GtkCheckMenuItem* menuitem, gpointer arg)
+    void GxJack::gx_set_jack_buffer_size(GtkCheckMenuItem* menuitem, gpointer arg)
     {
       // are we a proper jack client ?
       if (!client)
@@ -466,7 +466,7 @@ namespace gx_jack
               jcio = 1;
               gx_jconv::GxJConvSettings::checkbutton7 = 0;
               gx_jconv::checkbox7 = 0.0;
-              gx_child_process::gx_start_stop_jconv(NULL, NULL);
+              gx_child_process::ChildProcess::instance()->gx_start_stop_jconv(NULL, NULL);
             }
 
           // let's resize the buffer
@@ -479,7 +479,7 @@ namespace gx_jack
               jcio = 0;
               gx_jconv::GxJConvSettings::checkbutton7 = 1;
               gx_jconv::checkbox7 = 1.0;
-              gx_child_process::gx_start_stop_jconv(NULL, NULL);
+              gx_child_process::ChildProcess::instance()->gx_start_stop_jconv(NULL, NULL);
             }
         }
       else // restore latency status
@@ -496,11 +496,11 @@ namespace gx_jack
     }
 
     //-----Function that cleans the jack stuff on shutdown
-    void gx_jack_cleanup()
+    void GxJack::gx_jack_cleanup()
     {
       if (client)
         {
-          jack_is_exit = true;
+          set_is_jack_exit(true);
           // disable input ports
           for (int i = 0; i < gNumInChans; i++)
             jack_port_unregister(client, input_ports[i]);
@@ -517,7 +517,7 @@ namespace gx_jack
     }
 
     //----jack sample rate change callback
-    int gx_jack_srate_callback(jack_nframes_t frames, void* arg)
+    int GxJack::gx_jack_srate_callback(jack_nframes_t frames, void* arg)
     {
       /* Note: just reporting log for now  */
 
@@ -529,16 +529,16 @@ namespace gx_jack
     }
 
     //---- jack shutdown callback in case jackd shuts down on us
-    void gx_jack_shutdown_callback(void *arg)
+    void GxJack::gx_jack_shutdown_callback(void *arg)
     {
       gx_print_warning("Jack Shutdown",
                        "jack has bumped us out!!");
 
-      jack_is_down = true;
+      instance()->set_is_jack_down(true);
     }
 
     //---- jack client callbacks
-    int gx_jack_graph_callback (void* arg)
+    int GxJack::gx_jack_graph_callback (void* arg)
     {
 
       if (jack_port_connected(input_ports[0]))
@@ -573,8 +573,9 @@ namespace gx_jack
 
 
     //---- jack xrun callback
-    int gx_jack_xrun_callback (void* arg)
+    int GxJack::gx_jack_xrun_callback (void* arg)
     {
+      static jack_nframes_t      last_xrun_time = 0;
       if ((last_xrun_time + 1000) < jack_last_frame_time(client))
         {
           float xdel = jack_get_xrun_delayed_usecs(client);
@@ -588,7 +589,7 @@ namespace gx_jack
 
 
     //---- jack buffer size change callback
-    int gx_jack_buffersize_callback (jack_nframes_t nframes,void* arg)
+    int GxJack::gx_jack_buffersize_callback (jack_nframes_t nframes,void* arg)
     {
       GxEngineState estate = (GxEngineState)checky;
 
@@ -604,21 +605,21 @@ namespace gx_jack
       if (estate != kEngineOff)
         checky = (float)kEngineOff;
 
-      jack_bs = nframes;
+      GxJack::instance()->set_bz(nframes);
       gx_print_info("buffersize_callback",
                     string("the buffer size is now ") +
-                    gx_i2a(jack_bs) + string("/frames"));
+                    gx_i2a(GxJack::instance()->get_bz()) + string("/frames"));
 
       if (get_frame)  delete[] get_frame;
       if (get_frame1)  delete[] get_frame1;
       get_frame = NULL;
       get_frame1 = NULL;
 
-      get_frame = new float[jack_bs];
-      (void)memset(get_frame, 0, sizeof(float)*jack_bs);
+      get_frame = new float[GxJack::instance()->get_bz()];
+      (void)memset(get_frame, 0, sizeof(float)*GxJack::instance()->get_bz());
 
-      get_frame1 = new float[jack_bs];
-      (void)memset(get_frame1, 0, sizeof(float)*jack_bs);
+      get_frame1 = new float[GxJack::instance()->get_bz()];
+      (void)memset(get_frame1, 0, sizeof(float)*GxJack::instance()->get_bz());
 
       // restore previous state
       checky = (float)estate;
@@ -627,9 +628,9 @@ namespace gx_jack
 
 
     // ----- main jack process method
-    int gx_jack_process (jack_nframes_t nframes, void *arg)
+    int GxJack::gx_jack_process (jack_nframes_t nframes, void *arg)
     {
-      if (!jack_is_exit)
+      if (!instance()->get_is_jack_exit())
         {
           AVOIDDENORMALS;
           // gx_engine::buffers_ready = false;
@@ -656,7 +657,7 @@ namespace gx_jack
     }
 
     //----- fetch available jack ports other than Jc_Gui ports
-    void gx_jack_portreg_callback(jack_port_id_t pid, int reg, void* arg)
+    void GxJack::gx_jack_portreg_callback(jack_port_id_t pid, int reg, void* arg)
     {
       // just to be safe
       if (!client) return;
@@ -690,7 +691,7 @@ namespace gx_jack
     }
 
     //----- client registration callback
-    void gx_jack_clientreg_callback(const char* name, int reg, void* arg)
+    void GxJack::gx_jack_clientreg_callback(const char* name, int reg, void* arg)
     {
       // just to be safe
       if (!client) return;
@@ -722,7 +723,7 @@ namespace gx_jack
     }
 
     //---- GTK callback from port item for port connection
-    void gx_jack_port_connect(GtkWidget* wd, gpointer data)
+    void GxJack::gx_jack_port_connect(GtkWidget* wd, gpointer data)
     {
       GtkToggleButton* button = GTK_TOGGLE_BUTTON(wd);
 

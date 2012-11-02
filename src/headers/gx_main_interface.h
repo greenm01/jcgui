@@ -37,8 +37,44 @@ namespace gx_gui
   class GxMainInterface : public gx_ui::GxUI
   {
   private:
+
+    static const gboolean expand   = TRUE;
+    static const gboolean fill     = TRUE;
+    static const gboolean homogene = FALSE;
+
+    GtkWidget* addWidget(const char* label, GtkWidget* w);
+    virtual void pushBox(int mode, GtkWidget* w);
+
     // private constructor
     GxMainInterface(const char* name, int* pargc, char*** pargv);
+
+    // -- layout groups
+
+    virtual void openFrameBox(const char* label);
+    virtual void openFrame1Box(const char* label);
+    virtual void openHorizontalBox(const char* label = "");
+    virtual void openVerticalBox(const char* label = "");
+    virtual void openVertical1Box(const char* label = "");
+    virtual void openVertical2Box(const char* label = "");
+    virtual void openWarningBox(const char* label, float* zone);
+    virtual void openEventBox(const char* label = "");
+    virtual void openTabBox(const char* label = "");
+    virtual void openLevelMeterBox(const char* label);
+
+    virtual void closeBox();
+
+    // -- active widgets
+
+    virtual void addbtoggle(const char* label, float* zone);
+    virtual void addstoggle(const char* label, float* zone);
+    virtual void addregler(const char* label, float* zone, float init, float min, float max, float step);
+    virtual void addbigregler(const char* label, float* zone, float init, float min, float max, float step);
+    virtual void addslider(const char* label, float* zone, float init, float min, float max, float step);
+    virtual void addValueDisplay(const char* label, float* zone, float init, float min, float max, float step);
+    virtual void addStatusDisplay(const char* label, float* zone );
+
+    // -- create jack portmap window
+    void createPortMapWindow(const char* label = "");
 
     void addMainMenu();
 
@@ -53,7 +89,6 @@ namespace gx_gui
 
     void addAboutMenu();
 
-  protected :
     int			fTop;
     GtkWidget*          fBox[stackSize];
     int 		fMode[stackSize];
@@ -73,16 +108,13 @@ namespace gx_gui
     // jack menu widgets
     GtkWidget*          fJackConnectItem;
     GtkWidget*          fJackLatencyItem[NJACKLAT];
-
-    GtkWidget* addWidget(const char* label, GtkWidget* w);
-    virtual void pushBox(int mode, GtkWidget* w);
+    static void         start_stop_jc(GtkWidget* wd, gpointer c);
+    static void         jack_connection(GtkCheckMenuItem* wd, gpointer c);
+    static void         set_jack_buffer_size(GtkCheckMenuItem* wd, gpointer c);
+    static void         jack_port_connect(GtkWidget* wd, gpointer c);
 
   public :
     static bool	 fInitialized;
-
-    static const gboolean expand   = TRUE;
-    static const gboolean fill     = TRUE;
-    static const gboolean homogene = FALSE;
 
     static GxMainInterface* instance(const char* name = "",
 				     int* pargc = NULL, char*** pargv = NULL);
@@ -119,34 +151,6 @@ namespace gx_gui
     GtkWidget* getClientPort       (const string, const int);
     GtkWidget* getClientPortTable  (const string, const int);
     GtkWidget* getClientPortMap    (const string);
-
-    // -- create jack portmap window
-    void createPortMapWindow(const char* label = "");
-
-    // -- layout groups
-
-    virtual void openFrameBox(const char* label);
-    virtual void openFrame1Box(const char* label);
-    virtual void openHorizontalBox(const char* label = "");
-    virtual void openVerticalBox(const char* label = "");
-    virtual void openVertical1Box(const char* label = "");
-    virtual void openVertical2Box(const char* label = "");
-    virtual void openWarningBox(const char* label, float* zone);
-    virtual void openEventBox(const char* label = "");
-    virtual void openTabBox(const char* label = "");
-    virtual void openLevelMeterBox(const char* label);
-
-    virtual void closeBox();
-
-    // -- active widgets
-
-    virtual void addbtoggle(const char* label, float* zone);
-    virtual void addstoggle(const char* label, float* zone);
-    virtual void addregler(const char* label, float* zone, float init, float min, float max, float step);
-    virtual void addbigregler(const char* label, float* zone, float init, float min, float max, float step);
-    virtual void addslider(const char* label, float* zone, float init, float min, float max, float step);
-    virtual void addValueDisplay(const char* label, float* zone, float init, float min, float max, float step);
-    virtual void addStatusDisplay(const char* label, float* zone );
 
     virtual void setup();
     virtual void show();

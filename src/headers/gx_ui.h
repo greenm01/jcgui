@@ -75,26 +75,6 @@ namespace gx_ui
     zmap		fZoneMap;
     bool		fStopped;
 
-  public:
-    GxUI();
-    virtual ~GxUI() {}
-
-    // public methods
-    void registerZone(float*, GxUiItem*);
-    void saveStateToFile(const char*);
-    void dumpStateToString(string&);
-    bool applyStateFromString(const string&);
-    void fetchPresetStateFromFile(const char*, const char*, string&);
-    bool recallPresetByname(const char*, const char*);
-    bool renamePreset(const char*, const char*, const char*);
-    void recallState(const char* filename);
-    void recalladState(const char* filename, int a, int b, int lin);
-    void updateAllZones();
-    void updateZone(float* z);
-    static void updateAllGuis();
-
-    //    virtual GtkTextView* const getLoggingWindow() const { return NULL; }
-
     virtual void addMenu() {};
 
     virtual void addbtoggle(const char* label, float* zone){};
@@ -122,6 +102,24 @@ namespace gx_ui
     virtual void openJackClientBox(const char* label) {};
 
     virtual void closeBox() {};
+
+  public:
+    GxUI();
+    virtual ~GxUI() {}
+
+    // public methods
+    void registerZone(float*, GxUiItem*);
+    void saveStateToFile(const char*);
+    void dumpStateToString(string&);
+    bool applyStateFromString(const string&);
+    void fetchPresetStateFromFile(const char*, const char*, string&);
+    bool recallPresetByname(const char*, const char*);
+    bool renamePreset(const char*, const char*, const char*);
+    void recallState(const char* filename);
+    void recalladState(const char* filename, int a, int b, int lin);
+    void updateAllZones();
+    void updateZone(float* z);
+    static void updateAllGuis();
 
     virtual void setup() {};
     virtual void show() {};

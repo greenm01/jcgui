@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <cmath>
 #include <assert.h>
+#include <zita-resampler/resampler.h>
 
 using namespace std;
 
@@ -75,44 +76,47 @@ namespace gx_sndfile
         return 1; 
     }
 
-    float *BufferResampler::process(int fs_inp, int ilen, float *input, int fs_outp, int *olen, int chan)
-    {
-        int d = gcd(fs_inp, fs_outp);
-        int ratio_a = fs_inp / d;
-        int ratio_b = fs_outp / d;
-        
-        const int qual = 32;
-        if (setup(fs_inp, fs_outp, chan, qual) != 0) {
-            return 0;
+    class BufferResampler: Resampler {
+    public:
+        float *process(int fs_inp, int ilen, float *input, int fs_outp, int *olen, int chan)
+        {
+            int d = gcd(fs_inp, fs_outp);
+            int ratio_a = fs_inp / d;
+            int ratio_b = fs_outp / d;
+            
+            const int qual = 32;
+            if (setup(fs_inp, fs_outp, chan, qual) != 0) {
+                return 0;
+            }
+            // pre-fill with k/2-1 zeros
+            int k = inpsize();
+            inp_count = k/2-1;
+            inp_data = 0;
+            out_count = 1; // must be at least 1 to get going
+            out_data = 0;
+            if (Resampler::process() != 0) {
+                return 0;
+            }
+            inp_count = ilen;
+            int nout = out_count = (ilen * ratio_b + ratio_a - 1) / ratio_a;
+            inp_data = input;
+            float *p = out_data = new float[out_count*chan];
+            if (Resampler::process() != 0) {
+                delete p;
+                return 0;
+            }
+            inp_data = 0;
+            inp_count = k/2;
+            if (Resampler::process() != 0 || inp_count != 0 || out_count > 1) {
+                delete p;
+                return 0;
+            }
+            assert(inp_count == 0);
+            assert(out_count <= 1);
+            *olen = nout - out_count;
+            return p;
         }
-        // pre-fill with k/2-1 zeros
-        int k = inpsize();
-        inp_count = k/2-1;
-        inp_data = 0;
-        out_count = 1; // must be at least 1 to get going
-        out_data = 0;
-        if (Resampler::process() != 0) {
-            return 0;
-        }
-        inp_count = ilen;
-        int nout = out_count = (ilen * ratio_b + ratio_a - 1) / ratio_a;
-        inp_data = input;
-        float *p = out_data = new float[out_count*chan];
-        if (Resampler::process() != 0) {
-            delete p;
-            return 0;
-        }
-        inp_data = 0;
-        inp_count = k/2;
-        if (Resampler::process() != 0) {
-            delete p;
-            return 0;
-        }
-        assert(inp_count == 0);
-        assert(out_count <= 1);
-        *olen = nout - out_count;
-        return p;
-    }
+    };
 
     class CheckResample {
     private:
@@ -144,7 +148,7 @@ namespace gx_sndfile
 
 
   // --------------- sf_open writer wrapper : returns file desc. and audio file info
-  SNDFILE* openOutputSoundFile(const char* name, int chans, int sr, int format)
+  SNDFILE* Audio::openOutputSoundFile(const char* name, int chans, int sr, int format)
   {
     
     // initialise the SF_INFO structure
@@ -165,7 +169,7 @@ namespace gx_sndfile
   }
 
   // --------------- sf_open reader wrapper : returns file desc. and audio file info
-  SNDFILE* openInputSoundFile(const char* name, int* chans, int* sr, int* length)
+  SNDFILE* Audio::openInputSoundFile(const char* name, int* chans, int* sr, int* length)
   {
     SF_INFO info;
     SNDFILE *sf = sf_open(name, SFM_READ, &info);
@@ -178,7 +182,7 @@ namespace gx_sndfile
   }
   
   // --------------- sf_open reader wrapper : returns file desc. and audio file info
-  SNDFILE* openInfoSoundFile(const char* name, int* chans, int* sr, int* length, int* format)
+  SNDFILE* Audio::openInfoSoundFile(const char* name, int* chans, int* sr, int* length, int* format)
   {
     SF_INFO info;
     SNDFILE *sf = sf_open(name, SFM_READ, &info);
@@ -206,19 +210,19 @@ namespace gx_sndfile
   }
 
   // --------------- sf_writer wrapper
-  sf_count_t writeSoundOutput(SNDFILE *pOutput, float *buffer, int vecsize)
+  sf_count_t Audio::writeSoundOutput(SNDFILE *pOutput, float *buffer, int vecsize)
   {
     return sf_writef_float(pOutput, buffer, vecsize);
   }
 
   // --------------- sf_reader wrapper
-  sf_count_t readSoundInput(SNDFILE *pInput, float *buffer, int vecsize)
+  sf_count_t Audio::readSoundInput(SNDFILE *pInput, float *buffer, int vecsize)
   {
     return sf_readf_float(pInput, buffer, vecsize);
   }
 
   // --------------- audio resampler
-  GxResampleStatus resampleSoundFile(const char*  pInputi,
+  GxResampleStatus Audio::resampleSoundFile(const char*  pInputi,
 				     const char*  pOutputi,
 				     int jackframe)
   {
@@ -257,6 +261,7 @@ namespace gx_sndfile
       int ratio_a = sr / d;
       int ratio_b = jackframe / d;
       int nout =  (vecsize * ratio_b + ratio_a - 1) / ratio_a;
+      int gout = nout;
       if(nout < vecsize) nout = vecsize;
       // setup buffer for resampler
       float* sig = new float[nout*chans+2];
@@ -265,7 +270,7 @@ namespace gx_sndfile
 	  readSoundInput   (pInput,  sig, vecsize);
       sig = r.resample(&vecsize, sig, sr, jackframe, chans, &status);
       if (!status)
-	  writeSoundOutput (pOutput, sig, nout);
+	  writeSoundOutput (pOutput, sig, gout);
 
       // close files
       sf_close(pInput);
@@ -278,7 +283,7 @@ namespace gx_sndfile
   }
 
   // --------------- sf_close wrapper
-  void closeSoundFile(SNDFILE *psf_in)
+  void Audio::closeSoundFile(SNDFILE *psf_in)
   {
     sf_close(psf_in);
   }

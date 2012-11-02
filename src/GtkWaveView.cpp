@@ -161,8 +161,10 @@ static gboolean gtk_waveview_paint(gpointer obj)
       sig = new float[vecsize*2];
       vector<float>yval;
 
+      
+
       pvInput =
-        gx_sndfile::openInputSoundFile(jcset->getFullIRPath().c_str(), &chans, &sr, &length2);
+        gx_sndfile::Audio::instance()->openInputSoundFile(jcset->getFullIRPath().c_str(), &chans, &sr, &length2);
 
       double dws = GTK_WAVEVIEW_CLASS(GTK_OBJECT_GET_CLASS(widget))->drawscale = ((double)waw)/length2;
       GTK_WAVEVIEW_CLASS(GTK_OBJECT_GET_CLASS(widget))->filelength = length2;
@@ -178,7 +180,7 @@ static gboolean gtk_waveview_paint(gpointer obj)
 
           while (counter < length+length2-1)
             {
-              gx_sndfile::readSoundInput(pvInput, sig, vecsize);
+              gx_sndfile::Audio::instance()->readSoundInput(pvInput, sig, vecsize);
               counter   += vecsize;
               countfloat = 0;
               sfsig = &sig[0];
@@ -197,7 +199,7 @@ static gboolean gtk_waveview_paint(gpointer obj)
 
 
           /// close file desc.
-          gx_sndfile::closeSoundFile(pvInput);
+          gx_sndfile::Audio::instance()->closeSoundFile(pvInput);
           delete[] sig;
           break;
 
@@ -222,7 +224,7 @@ static gboolean gtk_waveview_paint(gpointer obj)
 
           while (counter<length+length2-1)
             {
-              gx_sndfile::readSoundInput(pvInput, sig, vecsize);
+              gx_sndfile::Audio::instance()->readSoundInput(pvInput, sig, vecsize);
               counter   += vecsize;
               countfloat = 0;
               sfsig = &sig[0];
@@ -244,7 +246,7 @@ static gboolean gtk_waveview_paint(gpointer obj)
               cairo_stroke (cr);
             }
 
-          gx_sndfile::closeSoundFile(pvInput);
+          gx_sndfile::Audio::instance()->closeSoundFile(pvInput);
 
           delete[] sig;
           break;

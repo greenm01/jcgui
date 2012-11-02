@@ -175,15 +175,15 @@ namespace gx_engine
       gNumOutChans = engine->getNumOutputs();
 
       //----- lock the buffer for the oscilloscope
-      const int frag = (const int)gx_jack::jack_bs;
-
+      const int frag = (const int)gx_jack::GxJack::instance()->get_bz();
+      int jsr = gx_jack::GxJack::instance()->get_sr();
       get_frame  = new float[frag];
       get_frame1  = new float[frag];
 
       (void)memset(get_frame,  0, frag*sizeof(float));
       (void)memset(get_frame1,  0, frag*sizeof(float));
 
-      engine->initEngine((int)gx_jack::jack_sr);
+      engine->initEngine(jsr);
 
       initialized = true;
     }

@@ -144,7 +144,7 @@ namespace gx_jconv
       return &jcset;
     }
 
-
+    GtkWidget * mslider; 
     // checkbutton state
     static float checkbutton7;
 

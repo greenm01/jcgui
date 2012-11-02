@@ -33,8 +33,6 @@ namespace gx_engine
     kEngineOn     = 1,
   } GxEngineState;
 
-
-
   /* global var  declarations */
 
   extern float  checky;
@@ -66,34 +64,15 @@ namespace gx_engine
 /* ----- jack namespace ----- */
 namespace gx_jack
 {
-  /* latency change confirmation */
-  typedef enum {
-    kChangeLatency = 1,
-    kKeepLatency   = 2
-  } GxJackLatencyChange;
-
   extern const int nIPorts; // mono input
   extern const int nOPorts; // stereo output + jconv
   extern int NO_CONNECTION;
 
   /* variables */
-  extern jack_nframes_t      last_xrun_time;   // jack sample rate
-  extern jack_nframes_t      jack_sr;   // jack sample rate
-  extern jack_nframes_t      jack_bs;   // jack buffer size
-  extern float               jcpu_load; // jack cpu_load
-
   extern jack_client_t*      client ;
   extern jack_port_t*        output_ports[];
   extern jack_port_t*        input_ports [];
-
-  extern GxJackLatencyChange change_latency;
-
-
-  extern jack_nframes_t      time_is;
-  extern bool                jack_is_down;
-  extern bool                jack_is_exit;
   extern string              client_name;
-
   extern string              client_out_graph;
   extern string              gx_port_names[];
 
@@ -114,7 +93,6 @@ namespace gx_jconv
 {
   /* some global vars */
   extern float checkbox7;
-  extern GtkWidget* mslider;
   extern bool jconv_is_running;
 }
 
@@ -140,21 +118,6 @@ namespace gx_preset
 
   extern GCallback preset_action_func[];
 }
-
-/* -------------------------------------------------------------------------- */
-
-/* ----- child process namespace ----- */
-namespace gx_child_process
-{
-  /* global var declarations  */
-
-
-  extern FILE*    jconv_stream;
-  extern string   mbg_pidfile;
-
-  extern pid_t child_pid[];
-}
-
 
 /* -------------------------------------------------------------------------- */
 

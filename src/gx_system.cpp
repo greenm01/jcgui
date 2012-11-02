@@ -441,7 +441,7 @@ namespace gx_system
     //----- clean up when shut down
     void gx_destroy_event()
     {
-      (void)gx_child_process::gx_terminate_child_procs();
+      (void)gx_child_process::ChildProcess::instance()->gx_terminate_child_procs();
 
       gx_jack::NO_CONNECTION = 1;
 
@@ -485,7 +485,7 @@ namespace gx_system
         gx_destroy_event();
 
       // clean jack client stuff
-      gx_jack_cleanup();
+      GxJack::instance()->gx_jack_cleanup();
       // delete the locked mem buffers
       if (get_frame)
         delete[] get_frame;

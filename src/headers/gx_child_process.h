@@ -31,14 +31,22 @@ namespace gx_child_process
 {
   /* --------------- function declarations -------------- */
 
-  FILE*    gx_popen(const char*, const char*, const int);
-  int      gx_pclose(FILE*, const int);
-  pid_t    gx_find_child_pid(const char*);
-  bool     gx_lookup_pid(const pid_t);
-
-  void     gx_start_stop_jconv(GtkWidget*, gpointer);
-
-  int      gx_terminate_child_procs();
-
+  class ChildProcess {
+    private:
+      pid_t    child_pid[2];
+      FILE*    jconv_stream;
+      FILE*    gx_popen(const char*, const char*, const int);
+      int      gx_pclose(FILE*, const int);
+      pid_t    gx_find_child_pid(const char*);
+      bool     gx_lookup_pid(const pid_t);
+      ChildProcess() {child_pid[0]=NO_PID; child_pid[1]=NO_PID;};
+    public:
+      void     gx_start_stop_jconv(GtkWidget*, gpointer);
+      int      gx_terminate_child_procs();
+      static inline ChildProcess* instance() {
+          static ChildProcess child;
+          return &child;
+      }
+  };
   /* -------------------------------------------------------------------------- */
 } /* end of gx_child_process namespace */

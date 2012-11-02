@@ -620,7 +620,7 @@ namespace gx_gui
       addWidget(label, button);
 
       g_signal_connect (GTK_OBJECT (button), "value-changed",
-                        G_CALLBACK (gx_child_process::gx_start_stop_jconv), (gpointer)c);
+                        G_CALLBACK (start_stop_jc), (gpointer)c);
     }
 
     void GxMainInterface::addstoggle(const char* label, float* zone)
@@ -751,6 +751,21 @@ namespace gx_gui
       closeBox();
       gtk_widget_hide(lw);
     };
+
+    // --------------------------class wrapper functions
+    void GxMainInterface::jack_connection(GtkCheckMenuItem* wd, gpointer c) {
+        gx_jack::GxJack::instance()->gx_jack_connection(wd, c);
+    }
+    void GxMainInterface::set_jack_buffer_size(GtkCheckMenuItem* wd, gpointer c) {
+        gx_jack::GxJack::instance()->gx_set_jack_buffer_size(wd, c);
+    }
+    void GxMainInterface::jack_port_connect(GtkWidget* wd, gpointer c) {
+        gx_jack::GxJack::instance()->gx_jack_port_connect(wd, c);
+    }
+
+    void GxMainInterface::start_stop_jc(GtkWidget* wd, gpointer c) {
+        gx_child_process::ChildProcess::instance()->gx_start_stop_jconv(wd, c);
+    }
 
     //----------------------------- main menu ----------------------------
     void GxMainInterface::addMainMenu()
@@ -1145,7 +1160,7 @@ namespace gx_gui
       gtk_widget_add_accelerator(menuitem, "activate", fAccelGroup,
                                  GDK_c, GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
       g_signal_connect (GTK_OBJECT (menuitem), "activate",
-                        G_CALLBACK (gx_jack::gx_jack_connection), NULL);
+                        G_CALLBACK (jack_connection), NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menucont), menuitem);
 
       gtk_widget_show (menuitem);
@@ -1192,7 +1207,7 @@ namespace gx_gui
           gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menuitem), FALSE);
 
           g_signal_connect (GTK_OBJECT (menuitem), "activate",
-                            G_CALLBACK (gx_jack::gx_set_jack_buffer_size),
+                            G_CALLBACK (set_jack_buffer_size),
                             GINT_TO_POINTER(jack_buffer_size));
 
           // display actual buffer size as default
@@ -1376,7 +1391,7 @@ namespace gx_gui
               gtk_widget_set_name(button,  (gchar*)port_name.c_str());
               gtk_box_pack_start(GTK_BOX(portbox), button, FALSE, FALSE, 0);
               g_signal_connect(GTK_OBJECT (button), "toggled",
-                               G_CALLBACK (gx_jack::gx_jack_port_connect),
+                               G_CALLBACK (jack_port_connect),
                                GINT_TO_POINTER(i));
               gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
               gtk_widget_show_all(button);
@@ -1690,7 +1705,7 @@ namespace gx_gui
           // refresh some GUI stuff
           gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(fJackConnectItem), TRUE);
 
-          GtkWidget* wd = getJackLatencyItem(gx_jack::jack_bs);
+          GtkWidget* wd = getJackLatencyItem(gx_jack::GxJack::instance()->get_bz());
           if (wd) gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(wd), TRUE);
 
           gtk_window_set_title(GTK_WINDOW(fWindow), gx_jack::client_name.c_str());

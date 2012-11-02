@@ -52,8 +52,6 @@ namespace gx_engine
     float* get_frame   = NULL;
     float* get_frame1   = NULL;
 
-
-
     /* number of channels */
     int    gNumInChans;
     int    gNumOutChans;
@@ -85,21 +83,9 @@ namespace gx_jack
     int NO_CONNECTION = 1;
 
     /* variables */
-    jack_nframes_t      last_xrun_time;
-    jack_nframes_t      jack_sr;   // jack sample rate
-    jack_nframes_t      jack_bs;   // jack buffer size
-    float               jcpu_load; // jack cpu_load
-
     jack_client_t*      client ;
     jack_port_t*        output_ports[nOPorts];
     jack_port_t*        input_ports [nIPorts];
-
-
-    jack_nframes_t      time_is;
-
-    bool                jack_is_down = false;
-    bool                jack_is_exit = false;
-    GxJackLatencyChange change_latency;
 
     string client_name  = "Jc_Gui";
     string client_out_graph = "";
@@ -123,7 +109,6 @@ namespace gx_jconv
   {
     /* some global vars */
     float checkbox7;
-    GtkWidget* mslider;
     bool jconv_is_running = false;
   }
 
@@ -174,23 +159,6 @@ namespace gx_preset
       G_CALLBACK(gx_save_oldpreset),
       G_CALLBACK(gx_rename_preset_dialog),
       G_CALLBACK(gx_delete_preset_dialog)
-    };
-  }
-
-/* ------------------------------------------------------------------------- */
-
-/* ----- child process namespace ----- */
-namespace gx_child_process
-  {
-    /* global var declarations */
-
-
-    FILE*    jconv_stream;
-    string   mbg_pidfile;
-
-    pid_t child_pid[1] =
-    {
-      NO_PID
     };
   }
 
@@ -286,9 +254,6 @@ namespace gx_gui
 
     multimap<string, int, StringComp> gx_client_port_queue;
     multimap<string, int, StringComp> gx_client_port_dequeue;
-
-
-
   }
 
 

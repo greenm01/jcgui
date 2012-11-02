@@ -201,7 +201,7 @@ namespace gx_gui
           static float old_peak_db  [2] = {-INFINITY, -INFINITY};
           static float old_jcpeak_db[2] = {-INFINITY, -INFINITY};
 
-          jack_nframes_t nframes = gx_jack::jack_bs;
+          jack_nframes_t nframes = gx_jack::GxJack::instance()->get_bz();
 
           // retrieve meter widgets
           GtkWidget* const* meters   = gui->getLevelMeters();
@@ -297,7 +297,7 @@ namespace gx_gui
       gx_engine::is_setup = 1;
       if (gx_jconv::GxJConvSettings::checkbutton7 == 1)
         {
-          gx_start_stop_jconv(NULL,NULL);
+          ChildProcess::instance()->gx_start_stop_jconv(NULL,NULL);
         }
       return FALSE;
 
@@ -313,7 +313,7 @@ namespace gx_gui
       // return if jack is not down
       if (gx_system_call("pgrep", "jackd", true) == SYSTEM_OK)
         {
-          if (gx_jack::jack_is_down)
+          if (gx_jack::GxJack::instance()->get_is_jack_down())
             {
               // let's make sure we get out of here
               if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(wd)))
@@ -339,7 +339,7 @@ namespace gx_gui
 
           gx_jconv::GxJConvSettings::checkbutton7 = 0;
           gx_jconv::jconv_is_running = false;
-          gx_jack::jack_is_down = true;
+          gx_jack::GxJack::instance()->set_is_jack_down(true);
         }
       return TRUE;
     }
@@ -374,7 +374,7 @@ namespace gx_gui
       // don't bother if we are not a valid client or if we are in the middle
       // of deleting stuff
       // if we are off jack or jack is down, delete everything
-      if (!gx_jack::client || gx_jack::jack_is_down)
+      if (!gx_jack::client || gx_jack::GxJack::instance()->get_is_jack_down())
         {
           gui->deleteAllClientPortMaps();
           gx_client_port_dequeue.clear();
