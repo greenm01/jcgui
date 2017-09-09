@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=Jc_Gui
 GenericName=Jconvolver Gui
+GenericName[fr]=Interface graphique pour Jconvolver
 Comment=Host for jconvolver
+Comment[fr]=Hôte pour jconvolver
 Exec=Jc_Gui
 Icon=Jc_Gui
 Categories=AudioVideo;X-Jack;
